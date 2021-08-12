@@ -6,11 +6,11 @@ import { Boss } from './entity/bosses.entity';
 export class BossesService {
   constructor(
     @Inject('BOSS_REPOSITORY')
-    private bossRepository: Repository<Boss>,
+    private repository: Repository<Boss>,
   ) {}
 
   async findAll(): Promise<Boss[]> {
-    return this.bossRepository.find();
+    return this.repository.find();
   }
 
   findOne(id: number) {
