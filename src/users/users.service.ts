@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { hash } from 'bcryptjs';
+import { compare, hash } from 'bcryptjs';
+import { InvalidCredentialsException } from '../errors/exceptions/invalidCredentials.exception';
 import { Repository } from 'typeorm';
-// import { CreateUserDto } from './dto/create-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -12,20 +12,30 @@ export class UsersService {
     private repository: Repository<User>,
   ) {}
 
-  // create(createUserDto: CreateUserDto) {
-  //   return 'This action adds a new user';
-  // }
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const userAlreadyExists = await this.repository.findOne({
+      where: {
+        username: createUserDto.username,
+        email: createUserDto.email,
+      },
+    });
 
-  findAll() {
-    return this.users;
+    if (userAlreadyExists) throw new InvalidCredentialsException();
+
+    createUserDto.password = await this.setPassword(createUserDto.password);
+    return await this.repository.save(createUserDto);
   }
 
-  // findOne(id: string) {
-  //   return `This action returns a #${id} user`;
-  // }
+  findAll() {
+    return [];
+  }
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
+  async findById(id: string): Promise<User> {
+    return await this.repository.findOne(id);
+  }
+
+  async findByUserName(username: string): Promise<User | undefined> {
+    return await this.repository.findOne({ where: { username } });
   }
 
   // update(id: string, updateUserDto: UpdateUserDto) {
@@ -36,18 +46,9 @@ export class UsersService {
     return await hash(password, 8);
   }
 
-  private readonly users: User[] = [
-    {
-      id: '1',
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      id: '2',
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
+  async checkPassword(user: User, password: string): Promise<boolean> {
+    return await compare(user.password, password);
+  }
 
   remove(id: number) {
     return `This action removes a #${id} user`;
