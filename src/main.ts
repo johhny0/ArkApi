@@ -1,4 +1,8 @@
-import { ValidationError, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationError,
+  ValidationPipe,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationException } from './errors/validation.exception';
@@ -9,22 +13,26 @@ async function bootstrap() {
 
   app.useGlobalFilters(new ValidationFilter());
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      skipMissingProperties: false,
-      exceptionFactory: (errors: ValidationError[]) => {
-        const messages = errors.map((error: ValidationError) => {
-          return {
-            message: Object.values(error.constraints)[0],
-          };
-        });
-        return new ValidationException(messages);
-      },
-    }),
-  );
+  app.useGlobalPipes(globalValidationFilter());
 
   await app.listen(process.env.PORT || 3000);
 
+  logRoutes(app);
+}
+
+function globalValidationFilter(): ValidationPipe {
+  const validationPipe = new ValidationPipe({
+    skipMissingProperties: false,
+    exceptionFactory: (errors: ValidationError[]) => {
+      const message = Object.values(errors.pop().constraints).pop();
+      return new ValidationException(message);
+    },
+  });
+
+  return validationPipe;
+}
+
+function logRoutes(app: INestApplication) {
   const server = app.getHttpServer();
   const router = server._events.request._router;
 
@@ -42,4 +50,5 @@ async function bootstrap() {
     .filter((item) => item !== undefined);
   console.log(availableRoutes);
 }
+
 bootstrap();

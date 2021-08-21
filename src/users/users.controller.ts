@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ErrorMessage, ErrorService } from 'src/errors/error.service';
 import { User } from './entities/user.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 // import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
@@ -23,6 +32,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(): Promise<User[] | ErrorMessage> {
     try {
@@ -42,8 +52,12 @@ export class UsersController {
   //   return this.usersService.update(+id, updateUserDto);
   // }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    try {
+      return this.usersService.remove(id);
+    } catch (error) {
+      return this.errorService.makeErrorMessage(error);
+    }
+  }
 }

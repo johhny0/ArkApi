@@ -9,6 +9,7 @@ export const databaseProviders = [
         database: './src/dbs/ark.db',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: true,
+        logging: false,
       }),
   },
 ];

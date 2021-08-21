@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { UserWeapon } from 'src/users/entities/usersWeapons.entity';
+import { Column, Entity, JoinTable, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity('weapons')
 export class Weapon {
@@ -10,4 +11,8 @@ export class Weapon {
 
   @Column()
   category: string;
+
+  @OneToMany(() => UserWeapon, (userWeapon) => userWeapon.weapon)
+  @JoinTable({ name: 'usersWeapons' })
+  userWeapons: UserWeapon[];
 }

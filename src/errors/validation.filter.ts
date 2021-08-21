@@ -6,7 +6,7 @@ export class ValidationFilter implements ExceptionFilter {
   catch(exception: ValidationException, host: ArgumentsHost): any {
     const context = host.switchToHttp();
     const response = context.getResponse();
-    const { message } = exception.validationErrors.pop();
+    const { message } = exception;
     return response.status(400).json({ message });
   }
 }
