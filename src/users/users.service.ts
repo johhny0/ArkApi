@@ -5,6 +5,9 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 
+interface UserFindOptions {
+  showPassword: boolean;
+}
 @Injectable()
 export class UsersService {
   constructor(
@@ -26,23 +29,31 @@ export class UsersService {
     return await this.repository.save(createUserDto);
   }
 
-  findAll() {
-    return [];
+  async findAll(): Promise<User[]> {
+    return await this.repository.find({
+      relations: ['userWeapons', 'userWeapons.weapon'],
+    });
   }
 
   async findById(id: string): Promise<User> {
     return await this.repository.findOne(id);
   }
 
-  async findByUserName(username: string): Promise<User | undefined> {
-    return await this.repository.findOne({ where: { username } });
+  async findByUserName(
+    username: string,
+    options: UserFindOptions = { showPassword: false },
+  ): Promise<User | undefined> {
+    return await this.repository.findOne({
+      where: { username },
+      select: options.showPassword ? ['password', 'username'] : null,
+    });
   }
 
   // update(id: string, updateUserDto: UpdateUserDto) {
   //   return `This action updates a #${id} user`;
   // }
 
-  async setPassword(password: string) {
+  async setPassword(password: string): Promise<string> {
     return await hash(password, 8);
   }
 
@@ -50,7 +61,7 @@ export class UsersService {
     return await compare(user.password, password);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    return await this.repository.softDelete(id);
   }
 }
