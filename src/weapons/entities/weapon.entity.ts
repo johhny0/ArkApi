@@ -1,4 +1,4 @@
-import { UserWeapon } from 'src/users/entities/usersWeapons.entity';
+import { UserWeapon } from 'src/users/entities/userWeapon.entity';
 import { Column, Entity, JoinTable, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity('weapons')

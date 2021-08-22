@@ -13,7 +13,9 @@ export class UsersService {
   constructor(
     @Inject('USER_REPOSITORY')
     private repository: Repository<User>,
-  ) {}
+  ) {
+    //
+  }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const userAlreadyExists = await this.repository.findOne({
@@ -31,7 +33,16 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return await this.repository.find({
-      relations: ['userWeapons', 'userWeapons.weapon'],
+      relations: [
+        'userWeapons',
+        'userWeapons.weapon',
+        'userArmors',
+        'userArmors.armor',
+        'userBosses',
+        'userBosses.boss',
+        'userDinos',
+        'userDinos.dino',
+      ],
     });
   }
 
